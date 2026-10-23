@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {Weapon,wallDistance,move,Navigation,CONFIG,TYPES} from '../src/core.ts';
+test('pistol: 12 rounds, cooldown, empty magazine and 1.5 second reload',()=>{const w=new Weapon();for(let i=0;i<12;i++){assert.equal(w.shoot(),true);assert.equal(w.shoot(),false);w.tick(.3)}assert.equal(w.mag,0);assert.equal(w.shoot(),false);assert.equal(w.reload(),true);w.tick(1);assert.equal(w.shoot(),false);w.tick(.5);assert.equal(w.mag,12);assert.equal(w.reserve,36)});
+test('partial reload consumes only available reserve; no free ammunition',()=>{const w=new Weapon();w.mag=10;w.reserve=1;assert.equal(w.reload(),true);w.tick(1.5);assert.equal(w.mag,11);assert.equal(w.reserve,0);assert.equal(w.reload(),false)});
+test('wall blocks shots from either direction, including parallel rays',()=>{const b=[{x:4,z:0,w:2,d:4}];assert.equal(wallDistance({x:0,z:0},{x:1,z:0},b),3);assert.equal(wallDistance({x:8,z:0},{x:-1,z:0},b),3);assert.equal(wallDistance({x:0,z:3},{x:1,z:0},b),Infinity);assert.equal(wallDistance({x:4,z:0},{x:0,z:1},b),0)});
+test('movement slides beside an obstacle without entering it',()=>{const p={x:0,z:0};move(p,1,1,.45,[{x:1.5,z:0,w:1,d:4}]);assert.equal(p.x,0);assert.equal(p.z,1)});
+test('shared navigation finds a route around a building',()=>{const n=new Navigation([{x:0,z:0,w:6,d:10}]);n.update({x:12,z:0});let p={x:-12,z:0};for(let i=0;i<70&&n.dist[n.index(p)]>0;i++){const next=n.target(p);assert.equal(n.blocked[n.index(next)],0);assert.ok(n.dist[n.index(next)]<n.dist[n.index(p)]);p=next}assert.equal(n.dist[n.index(p)],0)});
+test('survival and enemy balance constants match the brief',()=>{assert.equal(CONFIG.duration,300);assert.equal(CONFIG.maxZombies,20);assert.deepEqual(TYPES.map(t=>t.hp),[100,60,300]);assert.ok(TYPES[1].speed>TYPES[0].speed);assert.ok(TYPES[2].damage>TYPES[0].damage)});
