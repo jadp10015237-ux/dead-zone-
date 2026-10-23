@@ -11,7 +11,7 @@ try{
  const context=await browser.newContext({viewport:{width:900,height:420},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  const page=await context.newPage();
  page.on('pageerror',e=>errors.push(String(e)));
- await page.addInitScript(()=>{document.documentElement.requestFullscreen=async()=>{};});
+ await page.addInitScript(()=>{Element.prototype.requestFullscreen=async()=>{};});
  await page.goto('http://127.0.0.1:4173/?qa=1');
  await page.waitForFunction(()=>window.__deadZoneQA);
  await mkdir('test-results',{recursive:true});
